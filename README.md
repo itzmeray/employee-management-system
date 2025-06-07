@@ -57,6 +57,24 @@ The system uses a normalized MySQL database with tables for:
 
 ---
 
-## 🖼️ Screenshots
+## 📷 Snapshots
 
-> Add screenshots of login page, dashboard, and employee table view here:
+> *Note: Below are static screenshots of the live hosted website.*
+
+### 🟢 Login Page
+
+<img src="images/login.jpg" alt="Login Page" width="800">
+
+---
+
+### 🟢 Dashboard View
+
+<img src="images/dashboard.jpg" alt="Dashboard" width="800">
+
+---
+
+### 🟢 Employee Table View
+
+<img src="images/employee-table.jpg" alt="Employee Table" width="800">
+
+---
