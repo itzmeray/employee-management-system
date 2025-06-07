@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departments - Employee Management System</title>
+    <link rel="stylesheet" href="assets/css/emoployee.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="assets/images/logo.png" alt="Company Logo">
+                <h2>EmployeeMS</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="employees.html"><i class="fas fa-users"></i> Employees</a></li>
+                    <li class="active"><a href="departments.html"><i class="fas fa-building"></i> Departments</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-left">
+                    <button class="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>Departments</h1>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <input type="text" placeholder="Search..." id="search-input">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="user-profile">
+                        <img src="assets/images/default-profile.png" alt="User Profile">
+                        <span>Admin User</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <div class="content-header">
+                    <h2>All Departments</h2>
+                    <button class="btn primary" id="add-department-btn">
+                        <i class="fas fa-plus"></i> Add Department
+                    </button>
+                </div>
+
+                <div id="message-container" class="form-message hidden"></div>
+
+                <div class="table-container">
+                    <table id="departments-table" class="display nowrap" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Department Name</th>
+                                <th>Manager</th>
+                                <th>Location</th>
+                                <th>Employees</th>
+                                <th>Budget</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="departments-data">
+                            <!-- Data will be loaded via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Department Modal -->
+    <div class="modal" id="add-department-modal">
+        <div class="modal-content">
+            <h3>Add New Department</h3>
+            <form id="add-department-form">
+                <input type="hidden" name="add_department" value="1">
+                <div class="form-group">
+                    <label for="name">Department Name *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="manager_id">Manager</label>
+                    <select id="manager_id" name="manager_id">
+                        <option value="">Select Manager</option>
+                        <!-- Options will be loaded via JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location">
+                </div>
+                <div class="form-group">
+                    <label for="budget">Budget ($)</label>
+                    <input type="number" id="budget" name="budget" step="0.01" min="0" value="0.00">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn secondary" id="cancel-add-dept">Cancel</button>
+                    <button type="submit" class="btn primary">Add Department</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="delete-dept-modal">
+        <div class="modal-content">
+            <h3>Confirm Department Deletion</h3>
+            <p>Are you sure you want to delete this department? All employees in this department will be moved to "Unassigned".</p>
+            <div class="modal-actions">
+                <button class="btn secondary" id="cancel-dept-delete">Cancel</button>
+                <button class="btn danger" id="confirm-dept-delete">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let dataTable;
+            let departmentToDelete = null;
+            let managers = [];
+            
+            // Toggle sidebar on mobile
+            $('.menu-toggle').click(function() {
+                $('.sidebar').toggleClass('active');
+            });
+            
+            // Function to show message
+            function showMessage(type, message) {
+                const container = $('#message-container');
+                container.removeClass('hidden success error').addClass(type).text(message);
+                setTimeout(() => container.addClass('hidden'), 5000);
+            }
+            
+            // Load department data
+            function loadDepartments() {
+                $.ajax({
+                    url: 'php/departments_operations.php',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            renderDepartments(response.data);
+                        } else {
+                            showMessage('error', response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        showMessage('error', 'Failed to load departments: ' + error);
+                    }
+                });
+            }
+            
+            // Load managers for dropdown
+            function loadManagers() {
+                $.ajax({
+                    url: 'php/employee_operations.php',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            managers = response.data;
+                            updateManagerDropdown();
+                        }
+                    },
+                    error: function() {
+                        showMessage('error', 'Failed to load managers');
+                    }
+                });
+            }
+            
+            // Update manager dropdown
+            function updateManagerDropdown() {
+                const dropdown = $('#manager_id');
+                dropdown.empty();
+                dropdown.append('<option value="">Select Manager</option>');
+                
+                managers.forEach(manager => {
+                    dropdown.append(`<option value="${manager.id}">${manager.name}</option>`);
+                });
+            }
+            
+            // Render departments in table
+            function renderDepartments(departments) {
+                let html = '';
+                
+                if (departments.length === 0) {
+                    html = `<tr><td colspan="7" class="text-center">No departments found</td></tr>`;
+                } else {
+                    departments.forEach(dept => {
+                        html += `
+                        <tr>
+                            <td>${dept.id}</td>
+                            <td>${dept.name}</td>
+                            <td>${dept.manager_name || 'Not assigned'}</td>
+                            <td>${dept.location || '-'}</td>
+                            <td>${dept.employee_count}</td>
+                            <td>$${parseFloat(dept.budget || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="edit-department.html?id=${dept.id}" class="btn-icon edit" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn-icon delete" data-id="${dept.id}" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        `;
+                    });
+                }
+                
+                $('#departments-data').html(html);
+                
+                // Initialize/reinitialize DataTable
+                if ($.fn.DataTable.isDataTable('#departments-table')) {
+                    dataTable.destroy();
+                }
+                
+                dataTable = $('#departments-table').DataTable({
+                    responsive: {
+                        details: {
+                            display: $.fn.dataTable.Responsive.display.modal({
+                                header: function (row) {
+                                    var data = row.data();
+                                    return 'Details for ' + data[1];
+                                }
+                            }),
+                            renderer: $.fn.dataTable.Responsive.renderer.tableAll({
+                                tableClass: 'table'
+                            })
+                        }
+                    },
+                    dom: '<"top"f>rt<"bottom"lip><"clear">',
+                    initComplete: function() {
+                        // Custom search handler
+                        $('#search-input').keyup(function() {
+                            dataTable.search($(this).val()).draw();
+                        });
+                    }
+                });
+            }
+            
+            // Initial load
+            loadDepartments();
+            loadManagers();
+            
+            // Add Department button click handler
+            $('#add-department-btn').click(function() {
+                $('#add-department-modal').addClass('active');
+            });
+            
+            $('#cancel-add-dept').click(function() {
+                $('#add-department-modal').removeClass('active');
+                $('#add-department-form')[0].reset();
+            });
+            
+            // Delete button click handler
+            $(document).on('click', '.btn-icon.delete', function() {
+                departmentToDelete = $(this).data('id');
+                $('#delete-dept-modal').addClass('active');
+            });
+            
+            $('#cancel-dept-delete').click(function() {
+                $('#delete-dept-modal').removeClass('active');
+                departmentToDelete = null;
+            });
+            
+            $('#confirm-dept-delete').click(function() {
+                if (departmentToDelete) {
+                    $.ajax({
+                        url: 'php/departments_operations.php',
+                        type: 'POST',
+                        data: {
+                            delete_department: true,
+                            id: departmentToDelete
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                showMessage('success', response.message);
+                                loadDepartments();
+                            } else {
+                                showMessage('error', response.message);
+                            }
+                            $('#delete-dept-modal').removeClass('active');
+                            departmentToDelete = null;
+                        },
+                        error: function(xhr, status, error) {
+                            showMessage('error', 'Delete failed: ' + error);
+                            $('#delete-dept-modal').removeClass('active');
+                            departmentToDelete = null;
+                        }
+                    });
+                }
+            });
+            
+            // Add department form submission
+            $('#add-department-form').submit(function(e) {
+                e.preventDefault();
+                const formData = $(this).serialize();
+                
+                $.ajax({
+                    url: 'php/departments_operations.php',
+                    type: 'POST',
+                    data: formData,
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            showMessage('success', response.message);
+                            $('#add-department-modal').removeClass('active');
+                            $('#add-department-form')[0].reset();
+                            loadDepartments();
+                        } else {
+                            showMessage('error', response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        showMessage('error', 'Failed to add department: ' + error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Employee Management System</title>
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="assets/images/logo.png" alt="Company Logo">
+                <h2>EmployeeMS</h2>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="employees.html"><i class="fas fa-users"></i> Employees</a></li>
+                    <li><a href="departments.html"><i class="fas fa-building"></i> Departments</a></li>
+                    <li class="logout-item">
+                        <a href="php/logout.php">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-left">
+                    <button class="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>Dashboard Overview</h1>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <input type="text" placeholder="Search..." id="search-input">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="user-profile">
+                        <img src="assets/images/default-profile.png" alt="User Profile">
+                        <span>Admin User</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <div id="message-container" class="form-message hidden"></div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <div class="stats-icon blue">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Total Employees</h3>
+                            <p id="total-employees">0</p>
+                            <span class="stats-change" id="employee-change"></span>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon green">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Departments</h3>
+                            <p id="total-departments">0</p>
+                            <span class="stats-change" id="department-change"></span>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon orange">
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>On Leave</h3>
+                            <p id="on-leave">0</p>
+                            <span class="stats-change" id="leave-change"></span>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-icon purple">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Total Budget</h3>
+                            <p id="total-budget">$0</p>
+                            <span class="stats-change" id="budget-change"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <h2>Employee Distribution by Department</h2>
+                        <canvas id="department-distribution-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h2>Employee Status Overview</h2>
+                        <canvas id="employee-status-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Second Charts Row -->
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <h2>Department Budget Allocation</h2>
+                        <canvas id="budget-allocation-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h2>Employee Growth (Last 6 Months)</h2>
+                        <canvas id="employee-growth-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity & Top Departments -->
+                <div class="bottom-row">
+                    <div class="recent-activity">
+                        <h2>Recent Employee Activity</h2>
+                        <div class="activity-list" id="recent-activity-list">
+                            <!-- Loaded via JavaScript -->
+                        </div>
+                    </div>
+                    <div class="top-departments">
+                        <h2>Top Departments</h2>
+                        <div class="department-list" id="top-departments-list">
+                            <!-- Loaded via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Global variables to store data
+            let employeesData = [];
+            let departmentsData = [];
+            let activityData = [];
+            
+            // Function to show message
+            function showMessage(type, message) {
+                const container = $('#message-container');
+                container.removeClass('hidden success error').addClass(type).text(message);
+                setTimeout(() => container.addClass('hidden'), 5000);
+            }
+            
+            // Load all data
+            function loadData() {
+                $.when(
+                    $.get('php/employee_operations.php', { dashboard: true }),
+                    $.get('php/departments_operations.php', { dashboard: true })
+                ).then(function(employeesResponse, departmentsResponse) {
+                    // Process employees data
+                    if (employeesResponse[0].success) {
+                        employeesData = employeesResponse[0].data;
+                        updateEmployeeStats();
+                        renderRecentActivity();
+                    } else {
+                        showMessage('error', employeesResponse[0].message);
+                    }
+                    
+                    // Process departments data
+                    if (departmentsResponse[0].success) {
+                        departmentsData = departmentsResponse[0].data;
+                        updateDepartmentStats();
+                        renderTopDepartments();
+                    } else {
+                        showMessage('error', departmentsResponse[0].message);
+                    }
+                    
+                    // Initialize charts after data is loaded
+                    initCharts();
+                }).fail(function(error) {
+                    showMessage('error', 'Failed to load dashboard data');
+                });
+            }
+            
+            // Update employee statistics
+            function updateEmployeeStats() {
+                const totalEmployees = employeesData.length;
+                const onLeave = employeesData.filter(e => e.status === 'On Leave').length;
+                const active = employeesData.filter(e => e.status === 'Active').length;
+                const terminated = employeesData.filter(e => e.status === 'Terminated').length;
+                
+                $('#total-employees').text(totalEmployees);
+                $('#on-leave').text(onLeave);
+                
+                // Calculate percentage change (simulated)
+                const employeeChange = Math.floor(Math.random() * 10) - 2;
+                const changeElement = $('#employee-change');
+                changeElement.text(`${Math.abs(employeeChange)}% ${employeeChange >= 0 ? 'increase' : 'decrease'} from last month`);
+                changeElement.toggleClass('positive', employeeChange >= 0);
+                changeElement.toggleClass('negative', employeeChange < 0);
+                
+                const leaveChange = Math.floor(Math.random() * 5) - 2;
+                const leaveElement = $('#leave-change');
+                leaveElement.text(`${Math.abs(leaveChange)}% ${leaveChange >= 0 ? 'increase' : 'decrease'} from last month`);
+                leaveElement.toggleClass('positive', leaveChange >= 0);
+                leaveElement.toggleClass('negative', leaveChange < 0);
+            }
+            
+            // Update department statistics
+            function updateDepartmentStats() {
+                const totalDepartments = departmentsData.length;
+                const totalBudget = departmentsData.reduce((sum, dept) => sum + parseFloat(dept.budget || 0), 0);
+                
+                $('#total-departments').text(totalDepartments);
+                $('#total-budget').text(`$${totalBudget.toLocaleString()}`);
+                
+                // Calculate percentage change (simulated)
+                const deptChange = Math.floor(Math.random() * 5);
+                const deptElement = $('#department-change');
+                deptElement.text(`${deptChange}% increase from last quarter`);
+                deptElement.addClass('positive');
+                
+                const budgetChange = Math.floor(Math.random() * 15) - 5;
+                const budgetElement = $('#budget-change');
+                budgetElement.text(`${Math.abs(budgetChange)}% ${budgetChange >= 0 ? 'increase' : 'decrease'} from last year`);
+                budgetElement.toggleClass('positive', budgetChange >= 0);
+                budgetElement.toggleClass('negative', budgetChange < 0);
+            }
+            
+            // Initialize charts
+            function initCharts() {
+                // Department Distribution Chart
+                const deptDistribution = groupEmployeesByDepartment();
+                const deptCtx = document.getElementById('department-distribution-chart').getContext('2d');
+                new Chart(deptCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(deptDistribution),
+                        datasets: [{
+                            label: 'Employees',
+                            data: Object.values(deptDistribution),
+                            backgroundColor: '#4361ee',
+                            borderColor: '#3a56d4',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 5,
+                                    callback: function(value) {
+                                        return value % 5 === 0 ? value : '';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Employee Status Chart
+                const statusData = groupEmployeesByStatus();
+                const statusCtx = document.getElementById('employee-status-chart').getContext('2d');
+                new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(statusData),
+                        datasets: [{
+                            data: Object.values(statusData),
+                            backgroundColor: [
+                                '#4ade80', // Active
+                                '#f59e0b', // On Leave
+                                '#f43f5e'  // Terminated
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        cutout: '80%',
+                        plugins: {
+                            legend: { 
+                                position: 'right',
+                                labels: {
+                                    boxWidth: 10,
+                                    padding: 10
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Budget Allocation Chart
+                const budgetData = departmentsData.map(dept => ({
+                    name: dept.name,
+                    budget: parseFloat(dept.budget || 0)
+                }));
+                const budgetCtx = document.getElementById('budget-allocation-chart').getContext('2d');
+                new Chart(budgetCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: budgetData.map(d => d.name),
+                        datasets: [{
+                            data: budgetData.map(d => d.budget),
+                            backgroundColor: [
+                                '#4361ee', '#4cc9f0', '#4895ef', '#560bad', '#3f37c9',
+                                '#3a0ca3', '#480ca8', '#7209b7', '#b5179e', '#f72585'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { 
+                                position: 'right',
+                                labels: {
+                                    boxWidth: 10,
+                                    padding: 10
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Employee Growth Chart (simulated data)
+                const growthCtx = document.getElementById('employee-growth-chart').getContext('2d');
+                new Chart(growthCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Employees Hired',
+                            data: [12, 19, 15, 25, 18, 30],
+                            backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                            borderColor: 'rgba(67, 97, 238, 1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            }
+            
+            // Group employees by department
+            function groupEmployeesByDepartment() {
+                const groups = {};
+                employeesData.forEach(employee => {
+                    const dept = employee.department || 'Unassigned';
+                    groups[dept] = (groups[dept] || 0) + 1;
+                });
+                return groups;
+            }
+            
+            // Group employees by status
+            function groupEmployeesByStatus() {
+                const groups = {
+                    'Active': 0,
+                    'On Leave': 0,
+                    'Terminated': 0
+                };
+                employeesData.forEach(employee => {
+                    const status = employee.status || 'Active';
+                    groups[status] = (groups[status] || 0) + 1;
+                });
+                return groups;
+            }
+            
+            // Render recent activity
+            function renderRecentActivity() {
+                // Sort by most recent (simulated)
+                const recent = employeesData
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, 5);
+                
+                let html = '';
+                recent.forEach(employee => {
+                    const actions = [
+                        `${employee.name} joined ${employee.department}`,
+                        `${employee.name} updated their profile`,
+                        `${employee.name} changed to ${employee.status} status`
+                    ];
+                    const action = actions[Math.floor(Math.random() * actions.length)];
+                    
+                    html += `
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <img src="${employee.profile_img || 'assets/images/default-profile.png'}" alt="${employee.name}">
+                        </div>
+                        <div class="activity-details">
+                            <p class="activity-text">${action}</p>
+                            <span class="activity-time">${Math.floor(Math.random() * 24)} hours ago</span>
+                        </div>
+                    </div>
+                    `;
+                });
+                
+                $('#recent-activity-list').html(html);
+            }
+            
+            // Render top departments
+            function renderTopDepartments() {
+                // Sort by employee count or budget
+                const topDepts = [...departmentsData]
+                    .sort((a, b) => (b.employee_count || 0) - (a.employee_count || 0))
+                    .slice(0, 4);
+                
+                let html = '';
+                topDepts.forEach(dept => {
+                    html += `
+                    <div class="department-item">
+                        <div class="dept-info">
+                            <h3>${dept.name}</h3>
+                            <span class="dept-employees">${dept.employee_count || 0} employees</span>
+                        </div>
+                        <div class="dept-budget">
+                            $${parseFloat(dept.budget || 0).toLocaleString()}
+                        </div>
+                    </div>
+                    `;
+                });
+                
+                $('#top-departments-list').html(html);
+            }
+            
+            // Initial data load
+            loadData();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Department - Employee Management System</title>
+    <link rel="stylesheet" href="../assets/css/edit-department.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar (same as dashboard.html) -->
+        <aside class="sidebar">
+            <!-- ... same sidebar content as dashboard.html ... -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-left">
+                    <button class="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>Edit Department</h1>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <input type="text" placeholder="Search...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="user-profile">
+                        <img src="../assets/images/default-profile.png" alt="User Profile">
+                        <span>Admin User</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <div class="content-header">
+                    <h2>Edit Department Details</h2>
+                    <a href="departments.html" class="btn secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+
+                <form id="edit-department-form" class="employee-form">
+                    <div class="form-group">
+                        <label for="dept-name">Department Name</label>
+                        <input type="text" id="dept-name" name="dept-name" value="Marketing" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dept-manager">Manager</label>
+                        <select id="dept-manager" name="dept-manager">
+                            <option value="">No Manager</option>
+                            <option value="1" selected>John Doe</option>
+                            <option value="2">Jane Smith</option>
+                            <option value="3">Mike Johnson</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dept-location">Location</label>
+                        <input type="text" id="dept-location" name="dept-location" value="Floor 3, West Wing">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dept-budget">Budget</label>
+                        <input type="number" id="dept-budget" name="dept-budget" value="500000" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Employees in Department (15)</label>
+                        <div class="employee-list">
+                            <div class="employee-item">
+                                <img src="../assets/images/profiles/profile1.jpg" alt="Employee" width="40">
+                                <span>John Doe</span>
+                            </div>
+                            <div class="employee-item">
+                                <img src="../assets/images/profiles/profile2.jpg" alt="Employee" width="40">
+                                <span>Jane Smith</span>
+                            </div>
+                            <!-- More employees would be listed here -->
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn secondary">Cancel</button>
+                        <button type="submit" class="btn primary">Update Department</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/dashboard.js"></script>
+    <script>
+        document.getElementById('edit-department-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Here you would collect form data and make an AJAX call to your backend
+            alert('Department updated successfully!');
+            window.location.href = 'departments.html';
+        });
+    </script>
+</body>
+</html>

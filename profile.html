@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Employee Management System</title>
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar (same as dashboard.html) -->
+        <aside class="sidebar">
+            <!-- ... same sidebar content as dashboard.html ... -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-left">
+                    <button class="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1>Profile</h1>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <input type="text" placeholder="Search...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="user-profile">
+                        <img src="../assets/images/default-profile.png" alt="User Profile">
+                        <span>Admin User</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <div class="profile-header">
+                    <img src="../assets/images/profiles/profile1.jpg" alt="Profile Picture" class="profile-pic">
+                    <div class="profile-info">
+                        <h2>John Doe</h2>
+                        <p>Marketing Manager</p>
+                        <p>Marketing Department</p>
+                        <span class="profile-status active">Active</span>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn primary">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </button>
+                        <button class="btn secondary">
+                            <i class="fas fa-envelope"></i> Send Message
+                        </button>
+                    </div>
+                </div>
+
+                <div class="profile-details">
+                    <div class="profile-card">
+                        <h3>Personal Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Employee ID:</span>
+                                <span class="info-value">1001</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Email:</span>
+                                <span class="info-value">john.doe@company.com</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phone:</span>
+                                <span class="info-value">(123) 456-7890</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Hire Date:</span>
+                                <span class="info-value">May 15, 2020</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Salary:</span>
+                                <span class="info-value">$75,000</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Manager:</span>
+                                <span class="info-value">Jane Smith</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-card">
+                        <h3>Department Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Department:</span>
+                                <span class="info-value">Marketing</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Location:</span>
+                                <span class="info-value">Floor 3, West Wing</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Team Size:</span>
+                                <span class="info-value">15 employees</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Department Budget:</span>
+                                <span class="info-value">$500,000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-card">
+                        <h3>Emergency Contact</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Name:</span>
+                                <span class="info-value">Sarah Doe</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Relationship:</span>
+                                <span class="info-value">Spouse</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phone:</span>
+                                <span class="info-value">(123) 456-7891</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Address:</span>
+                                <span class="info-value">123 Main St, Anytown, USA</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-card">
+                        <h3>Documents</h3>
+                        <div class="document-list">
+                            <div class="document-item">
+                                <i class="fas fa-file-pdf"></i>
+                                <span>Employment Contract.pdf</span>
+                                <a href="#" class="btn-icon download">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                            <div class="document-item">
+                                <i class="fas fa-file-word"></i>
+                                <span>Performance Review.docx</span>
+                                <a href="#" class="btn-icon download">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                            <div class="document-item">
+                                <i class="fas fa-file-image"></i>
+                                <span>ID Photo.jpg</span>
+                                <a href="#" class="btn-icon download">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <button class="btn secondary" style="margin-top: 15px;">
+                            <i class="fas fa-upload"></i> Upload Document
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/dashboard.js"></script>
+</body>
+</html>

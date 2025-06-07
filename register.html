@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Employee Management System</title>
+    <link rel="stylesheet" href="assets/css/registerloginstyle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="assets/images/logo.png" alt="Company Logo">
+                <h2>Create an Account</h2>
+                <p>Join our employee management system</p>
+            </div>
+            
+            <form id="register-form" class="auth-form">
+                <div id="form-message" class="form-message hidden"></div>
+                
+                <div class="form-group">
+                    <label for="fullname">Full Name</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" name="password" placeholder="Create a password" required>
+                    </div>
+                    <div class="password-strength">
+                        <span class="strength-bar"></span>
+                        <span class="strength-bar"></span>
+                        <span class="strength-bar"></span>
+                        <span class="strength-text">Password strength: weak</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
+                    </div>
+                </div>
+                
+                <div class="form-group terms">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                </div>
+                
+                <button type="submit" class="btn primary auth-btn" id="register-btn">
+                    <span id="register-text">Register</span>
+                    <span id="register-spinner" class="spinner hidden"></span>
+                </button>
+                
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="login.html">Login here</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const messageDiv = document.getElementById('form-message');
+            const registerBtn = document.getElementById('register-btn');
+            const registerText = document.getElementById('register-text');
+            const spinner = document.getElementById('register-spinner');
+            
+            // Add action to form data
+            formData.append('register', 'true');
+            
+            // Show loading state
+            registerText.textContent = 'Registering...';
+            spinner.classList.remove('hidden');
+            registerBtn.disabled = true;
+            
+            // Submit form via AJAX
+            fetch('php/auth.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    messageDiv.textContent = data.message;
+                    messageDiv.className = 'form-message success';
+                    messageDiv.classList.remove('hidden');
+                    
+                    // Redirect to login after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    // Show error message
+                    messageDiv.textContent = data.message;
+                    messageDiv.className = 'form-message error';
+                    messageDiv.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                messageDiv.textContent = 'An error occurred. Please try again.';
+                messageDiv.className = 'form-message error';
+                messageDiv.classList.remove('hidden');
+            })
+            .finally(() => {
+                // Reset button state
+                registerText.textContent = 'Register';
+                spinner.classList.add('hidden');
+                registerBtn.disabled = false;
+            });
+        });
+        
+        // Password strength indicator
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBars = document.querySelectorAll('.strength-bar');
+            const strengthText = document.querySelector('.strength-text');
+            
+            // Reset
+            strengthBars.forEach(bar => bar.style.backgroundColor = '#e0e0e0');
+            
+            if (password.length === 0) {
+                strengthText.textContent = '';
+                return;
+            }
+            
+            let strength = 0;
+            
+            // Length check
+            if (password.length >= 8) strength++;
+            // Contains numbers
+            if (/\d/.test(password)) strength++;
+            // Contains special chars
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
+            // Contains uppercase
+            if (/[A-Z]/.test(password)) strength++;
+            
+            // Update UI
+            if (strength <= 1) {
+                strengthText.textContent = 'Password strength: weak';
+                strengthBars[0].style.backgroundColor = '#ff5252';
+            } else if (strength <= 3) {
+                strengthText.textContent = 'Password strength: medium';
+                strengthBars[0].style.backgroundColor = '#ffc107';
+                strengthBars[1].style.backgroundColor = '#ffc107';
+            } else {
+                strengthText.textContent = 'Password strength: strong';
+                strengthBars[0].style.backgroundColor = '#4caf50';
+                strengthBars[1].style.backgroundColor = '#4caf50';
+                strengthBars[2].style.backgroundColor = '#4caf50';
+            }
+        });
+    </script>
+</body>
+</html>
