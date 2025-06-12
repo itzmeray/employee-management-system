@@ -8,7 +8,7 @@ This is a **Java Full Stack Internship Project** developed as part of an interns
 
 ## 🏢 Internship Certificate Details
 
-> This is to certify that **Mr. B Kiran**, a *Bachelor of Engineering* student bearing USN: **2LG21CS028** from  
+> This is to certify that **Mr. B Kiran**, a *Bachelor of Engineering* student bearing USN: **2LG21CS005** from  
 > **Government Engineering College, Talkal, Koppal**  
 > has successfully completed an internship in **Java Full Stack** from **17th February 2025** to **24th May 2025**  
 > under the guidance of **Mr. Shishira Bhat** at  
